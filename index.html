@@ -106,7 +106,7 @@ dialog.lb::backdrop { background: transparent; }
 @media (prefers-reduced-motion: reduce) { .item img { transition: none; } }
 </style>
 </head>
-<body data-layout="grid">
+<body data-layout="masonry">
 
 <header>
   <h1>Your Name</h1>
@@ -116,13 +116,6 @@ dialog.lb::backdrop { background: transparent; }
   </nav>
 </header>
 
-<!-- PREVIEW ONLY: delete this div once you've picked a layout -->
-<div class="switcher" role="group" aria-label="Layout">
-  <button data-set="grid">Grid</button>
-  <button data-set="masonry">Masonry</button>
-  <button data-set="rows">Rows</button>
-  <button data-set="single">Single column</button>
-</div>
 
 <!--
   HOW TO ADD PHOTOS
@@ -224,15 +217,6 @@ dialog.lb::backdrop { background: transparent; }
     x0 = null;
   });
 
-  /* Layout switcher (preview only; remove with the switcher HTML/CSS) */
-  var btns = document.querySelectorAll('.switcher button');
-  function setLayout(name) {
-    document.body.setAttribute('data-layout', name);
-    btns.forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.set === name); });
-    try { history.replaceState(null, '', '#' + name); } catch (e) {}
-  }
-  btns.forEach(function (b) { b.onclick = function () { setLayout(b.dataset.set); }; });
-  setLayout(['grid', 'masonry', 'rows', 'single'].indexOf(location.hash.slice(1)) > -1 ? location.hash.slice(1) : 'grid');
 })();
 </script>
 </body>
