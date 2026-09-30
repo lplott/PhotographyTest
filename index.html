@@ -1,30 +1,239 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Your Name | Photography</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your Name | Photography</title>
+<style>
+:root {
+  --paper: #fafaf8;
+  --ink: #1c1c1b;
+  --mute: #8b8b86;
+  --gap: 10px;
+  --pad: clamp(16px, 4vw, 48px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--paper); }
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 300;
+  color: var(--ink);
+  background: var(--paper);
+  line-height: 1.5;
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+/* ---------- Header ---------- */
+header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 28px var(--pad) 20px;
+}
+header h1 { font-size: 1rem; font-weight: 400; letter-spacing: 0.02em; }
+nav a { text-decoration: none; margin-left: 24px; color: var(--mute); font-size: 0.9rem; }
+nav a:hover, nav a[aria-current] { color: var(--ink); }
+
+/* ---------- Layout switcher (preview only: delete this block, the
+   <div class="switcher"> in the HTML, and the switcher JS when you've chosen) ---------- */
+.switcher { padding: 0 var(--pad) 28px; display: flex; gap: 20px; flex-wrap: wrap; font-size: 0.85rem; }
+.switcher button {
+  background: none; border: 0; padding: 2px 0; font: inherit; color: var(--mute);
+  cursor: pointer; border-bottom: 1px solid transparent;
+}
+.switcher button[aria-pressed="true"] { color: var(--ink); border-color: var(--ink); }
+
+/* ---------- Gallery shared ---------- */
+.gallery { padding: 0 var(--pad) 64px; }
+.item { display: block; position: relative; cursor: zoom-in; overflow: hidden; }
+.item img { display: block; width: 100%; height: auto; transition: opacity .25s; }
+.item:hover img { opacity: .85; }
+
+/* Layout 1: GRID (uniform squares, tidy and calm) */
+[data-layout="grid"] .gallery {
+  display: grid; gap: var(--gap);
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+[data-layout="grid"] .item img { aspect-ratio: 1; object-fit: cover; }
+
+/* Layout 2: MASONRY (keeps each photo's real proportions) */
+[data-layout="masonry"] .gallery { column-gap: var(--gap); columns: 3 240px; }
+[data-layout="masonry"] .item { break-inside: avoid; margin-bottom: var(--gap); }
+
+/* Layout 3: ROWS (justified rows, like a contact sheet) */
+[data-layout="rows"] .gallery { display: flex; flex-wrap: wrap; gap: var(--gap); }
+[data-layout="rows"] .gallery::after { content: ""; flex-grow: 1000000; }
+[data-layout="rows"] .item {
+  flex: calc(var(--r, 1.5) * 100) 1 calc(var(--r, 1.5) * 220px);
+}
+[data-layout="rows"] .item img { height: 100%; object-fit: cover; }
+
+/* Layout 4: SINGLE (one large image at a time, captions underneath) */
+[data-layout="single"] .gallery { max-width: 960px; margin: 0 auto; display: grid; gap: 56px; }
+[data-layout="single"] .item::after {
+  content: attr(data-caption); display: block; padding-top: 12px;
+  font-size: 0.85rem; color: var(--mute);
+}
+
+footer { padding: 0 var(--pad) 40px; color: var(--mute); font-size: 0.8rem; }
+
+/* ---------- Lightbox ---------- */
+dialog.lb {
+  border: 0; padding: 0; width: 100vw; height: 100vh; max-width: none; max-height: none;
+  background: rgba(250, 250, 248, .98); color: var(--ink);
+}
+dialog.lb::backdrop { background: transparent; }
+.lb-stage {
+  position: absolute; inset: 56px 64px 72px; display: grid; place-items: center;
+}
+.lb-stage img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.lb-bar {
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 18px var(--pad);
+  display: flex; justify-content: space-between; gap: 16px; font-size: 0.85rem;
+}
+.lb-count { color: var(--mute); white-space: nowrap; }
+.lb button {
+  position: absolute; background: none; border: 0; cursor: pointer; color: var(--ink);
+  font: inherit; font-size: 1.6rem; line-height: 1; padding: 12px; opacity: .55;
+}
+.lb button:hover { opacity: 1; }
+.lb-close { top: 8px; right: 12px; }
+.lb-prev { left: 4px; top: 50%; transform: translateY(-50%); }
+.lb-next { right: 4px; top: 50%; transform: translateY(-50%); }
+@media (max-width: 600px) {
+  .lb-stage { inset: 56px 8px 72px; }
+  .lb-prev, .lb-next { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .item img { transition: none; } }
+</style>
 </head>
-<body>
-  <header>
-    <h1>Your Name</h1>
-    <nav>
-      <a href="index.html">Work</a>
-      <a href="about.html">About</a>
-    </nav>
-  </header>
+<body data-layout="grid">
 
-  <main class="gallery">
-    <a href="images/full/photo1.jpg">
-      <img src="images/thumbs/photo1.jpg" alt="Description of photo 1" loading="lazy">
-    </a>
-    <a href="images/full/photo2.jpg">
-      <img src="images/thumbs/photo2.jpg" alt="Description of photo 2" loading="lazy">
-    </a>
-    <!-- Add more photos here -->
-  </main>
+<header>
+  <h1>Your Name</h1>
+  <nav>
+    <a href="index.html" aria-current="page">Work</a>
+    <a href="about.html">About</a>
+  </nav>
+</header>
 
-  <footer>© 2026 Your Name</footer>
+<!-- PREVIEW ONLY: delete this div once you've picked a layout -->
+<div class="switcher" role="group" aria-label="Layout">
+  <button data-set="grid">Grid</button>
+  <button data-set="masonry">Masonry</button>
+  <button data-set="rows">Rows</button>
+  <button data-set="single">Single column</button>
+</div>
+
+<!--
+  HOW TO ADD PHOTOS
+  Each photo is one <a> containing one <img>.
+  - href    = full-size image (opens in the lightbox)
+  - src     = small thumbnail (~600px wide)
+  - width / height = the image's real pixel dimensions (or its ratio, e.g. 3 and 2).
+                     Required for Masonry and Rows to lay out correctly.
+  - data-caption = text shown in the lightbox
+  Until your files exist at these paths, gray placeholders appear instead.
+-->
+<main class="gallery" id="gallery">
+  <a class="item" href="images/full/photo-01.jpg" data-caption="Title one, Location, 2026">
+    <img src="images/thumbs/photo-01.jpg" width="3" height="2" alt="Describe photo 1" loading="lazy"></a>
+  <a class="item" href="images/full/photo-02.jpg" data-caption="Title two, Location, 2026">
+    <img src="images/thumbs/photo-02.jpg" width="2" height="3" alt="Describe photo 2" loading="lazy"></a>
+  <a class="item" href="images/full/photo-03.jpg" data-caption="Title three, Location, 2025">
+    <img src="images/thumbs/photo-03.jpg" width="1" height="1" alt="Describe photo 3" loading="lazy"></a>
+  <a class="item" href="images/full/photo-04.jpg" data-caption="Title four, Location, 2025">
+    <img src="images/thumbs/photo-04.jpg" width="4" height="5" alt="Describe photo 4" loading="lazy"></a>
+  <a class="item" href="images/full/photo-05.jpg" data-caption="Title five, Location, 2025">
+    <img src="images/thumbs/photo-05.jpg" width="3" height="2" alt="Describe photo 5" loading="lazy"></a>
+  <a class="item" href="images/full/photo-06.jpg" data-caption="Title six, Location, 2024">
+    <img src="images/thumbs/photo-06.jpg" width="16" height="9" alt="Describe photo 6" loading="lazy"></a>
+  <a class="item" href="images/full/photo-07.jpg" data-caption="Title seven, Location, 2024">
+    <img src="images/thumbs/photo-07.jpg" width="2" height="3" alt="Describe photo 7" loading="lazy"></a>
+  <a class="item" href="images/full/photo-08.jpg" data-caption="Title eight, Location, 2024">
+    <img src="images/thumbs/photo-08.jpg" width="3" height="2" alt="Describe photo 8" loading="lazy"></a>
+  <a class="item" href="images/full/photo-09.jpg" data-caption="Title nine, Location, 2023">
+    <img src="images/thumbs/photo-09.jpg" width="4" height="5" alt="Describe photo 9" loading="lazy"></a>
+</main>
+
+<footer>© 2026 Your Name</footer>
+
+<!-- Lightbox -->
+<dialog class="lb" id="lb" aria-label="Photo viewer">
+  <button class="lb-close" aria-label="Close">×</button>
+  <button class="lb-prev" aria-label="Previous photo">‹</button>
+  <button class="lb-next" aria-label="Next photo">›</button>
+  <div class="lb-stage"><img id="lb-img" alt=""></div>
+  <div class="lb-bar"><span id="lb-cap"></span><span class="lb-count" id="lb-count"></span></div>
+</dialog>
+
+<script>
+(function () {
+  var items = Array.prototype.slice.call(document.querySelectorAll('#gallery .item'));
+
+  /* Gray placeholder used whenever an image file is missing */
+  var tones = ['#e4e3df', '#dcdbd6', '#e9e8e4', '#d6d5d0'];
+  function ph(w, h, n, big) {
+    var W = big ? 1600 : 600, H = Math.round(W * h / w);
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">' +
+      '<rect width="100%" height="100%" fill="' + tones[n % tones.length] + '"/>' +
+      '<text x="50%" y="50%" fill="#8b8b86" font-family="Helvetica,Arial,sans-serif" font-size="' + W / 24 +
+      '" text-anchor="middle" dominant-baseline="middle">' + (n + 1) + '</text></svg>';
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  }
+
+  items.forEach(function (a, i) {
+    var img = a.querySelector('img');
+    var w = +img.getAttribute('width') || 3, h = +img.getAttribute('height') || 2;
+    a.style.setProperty('--r', (w / h).toFixed(3));
+    img.addEventListener('error', function () { img.onerror = null; img.src = ph(w, h, i, false); });
+    a.addEventListener('click', function (e) { e.preventDefault(); open(i); });
+  });
+
+  /* Lightbox */
+  var lb = document.getElementById('lb'), big = document.getElementById('lb-img');
+  var cap = document.getElementById('lb-cap'), count = document.getElementById('lb-count');
+  var cur = 0;
+
+  function show(i) {
+    cur = (i + items.length) % items.length;
+    var a = items[cur], t = a.querySelector('img');
+    var w = +t.getAttribute('width') || 3, h = +t.getAttribute('height') || 2;
+    big.onerror = function () { big.onerror = null; big.src = ph(w, h, cur, true); };
+    big.src = a.getAttribute('href');
+    big.alt = t.alt;
+    cap.textContent = a.dataset.caption || '';
+    count.textContent = (cur + 1) + ' / ' + items.length;
+  }
+  function open(i) { show(i); if (!lb.open) lb.showModal(); }
+  function close() { lb.close(); }
+
+  lb.querySelector('.lb-close').onclick = close;
+  lb.querySelector('.lb-prev').onclick = function () { show(cur - 1); };
+  lb.querySelector('.lb-next').onclick = function () { show(cur + 1); };
+  lb.addEventListener('click', function (e) { if (e.target === lb || e.target.classList.contains('lb-stage')) close(); });
+  lb.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft') show(cur - 1);
+    if (e.key === 'ArrowRight') show(cur + 1);
+  });
+  var x0 = null;
+  lb.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+  lb.addEventListener('touchend', function (e) {
+    if (x0 === null) return;
+    var dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 50) show(cur + (dx < 0 ? 1 : -1));
+    x0 = null;
+  });
+
+  /* Layout switcher (preview only; remove with the switcher HTML/CSS) */
+  var btns = document.querySelectorAll('.switcher button');
+  function setLayout(name) {
+    document.body.setAttribute('data-layout', name);
+    btns.forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.set === name); });
+    try { history.replaceState(null, '', '#' + name); } catch (e) {}
+  }
+  btns.forEach(function (b) { b.onclick = function () { setLayout(b.dataset.set); }; });
+  setLayout(['grid', 'masonry', 'rows', 'single'].indexOf(location.hash.slice(1)) > -1 ? location.hash.slice(1) : 'grid');
+})();
+</script>
 </body>
 </html>
