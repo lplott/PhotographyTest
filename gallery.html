@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gallery | Your Name Photography</title>
+<meta name="description" content="Selected photographs by Your Name.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <a class="logo" href="index.html" aria-label="Your Name, home">Logo</a>
+  <nav>
+    <a href="index.html">About</a>
+    <a href="gallery.html" aria-current="page">Gallery</a>
+  </nav>
+</header>
+
+<!--
+  Each photo is one <a> with one <img>.
+  href = full-size image (lightbox), src = thumbnail (~600px wide),
+  width/height = real pixel dimensions or ratio (e.g. 3 and 2), data-caption = lightbox text.
+  Gray placeholders show until the files exist.
+-->
+<main class="gallery" id="gallery">
+  <a class="item" href="images/full/photo-01.jpg" data-caption="Title one, Location, 2026">
+    <img src="images/thumbs/photo-01.jpg" width="3" height="2" alt="Describe photo 1" loading="lazy"></a>
+  <a class="item" href="images/full/photo-02.jpg" data-caption="Title two, Location, 2026">
+    <img src="images/thumbs/photo-02.jpg" width="2" height="3" alt="Describe photo 2" loading="lazy"></a>
+  <a class="item" href="images/full/photo-03.jpg" data-caption="Title three, Location, 2025">
+    <img src="images/thumbs/photo-03.jpg" width="1" height="1" alt="Describe photo 3" loading="lazy"></a>
+  <a class="item" href="images/full/photo-04.jpg" data-caption="Title four, Location, 2025">
+    <img src="images/thumbs/photo-04.jpg" width="4" height="5" alt="Describe photo 4" loading="lazy"></a>
+  <a class="item" href="images/full/photo-05.jpg" data-caption="Title five, Location, 2025">
+    <img src="images/thumbs/photo-05.jpg" width="3" height="2" alt="Describe photo 5" loading="lazy"></a>
+  <a class="item" href="images/full/photo-06.jpg" data-caption="Title six, Location, 2024">
+    <img src="images/thumbs/photo-06.jpg" width="16" height="9" alt="Describe photo 6" loading="lazy"></a>
+  <a class="item" href="images/full/photo-07.jpg" data-caption="Title seven, Location, 2024">
+    <img src="images/thumbs/photo-07.jpg" width="2" height="3" alt="Describe photo 7" loading="lazy"></a>
+  <a class="item" href="images/full/photo-08.jpg" data-caption="Title eight, Location, 2024">
+    <img src="images/thumbs/photo-08.jpg" width="3" height="2" alt="Describe photo 8" loading="lazy"></a>
+  <a class="item" href="images/full/photo-09.jpg" data-caption="Title nine, Location, 2023">
+    <img src="images/thumbs/photo-09.jpg" width="4" height="5" alt="Describe photo 9" loading="lazy"></a>
+</main>
+
+<footer>© 2026 Your Name</footer>
+
+<dialog class="lb" id="lb" aria-label="Photo viewer">
+  <button class="lb-close" aria-label="Close">×</button>
+  <button class="lb-prev" aria-label="Previous photo">‹</button>
+  <button class="lb-next" aria-label="Next photo">›</button>
+  <div class="lb-stage"><img id="lb-img" alt=""></div>
+  <div class="lb-bar"><span id="lb-cap"></span><span class="lb-count" id="lb-count"></span></div>
+</dialog>
+
+<script>
+(function () {
+  var items = Array.prototype.slice.call(document.querySelectorAll('#gallery .item'));
+
+  /* Gray placeholder shown when an image file is missing */
+  var tones = ['#e4e3df', '#dcdbd6', '#e9e8e4', '#d6d5d0'];
+  function ph(w, h, n, big) {
+    var W = big ? 1600 : 600, H = Math.round(W * h / w);
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">' +
+      '<rect width="100%" height="100%" fill="' + tones[n % tones.length] + '"/>' +
+      '<text x="50%" y="50%" fill="#8b8b86" font-family="Helvetica,Arial,sans-serif" font-size="' + W / 24 +
+      '" text-anchor="middle" dominant-baseline="middle">' + (n + 1) + '</text></svg>';
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  }
+
+  function dims(img) { return [+img.getAttribute('width') || 3, +img.getAttribute('height') || 2]; }
+
+  items.forEach(function (a, i) {
+    var img = a.querySelector('img'), d = dims(img);
+    img.addEventListener('error', function () { img.onerror = null; img.src = ph(d[0], d[1], i, false); });
+    a.addEventListener('click', function (e) { e.preventDefault(); open(i); });
+  });
+
+  /* Lightbox */
+  var lb = document.getElementById('lb'), big = document.getElementById('lb-img');
+  var cap = document.getElementById('lb-cap'), count = document.getElementById('lb-count');
+  var cur = 0;
+
+  function show(i) {
+    cur = (i + items.length) % items.length;
+    var a = items[cur], t = a.querySelector('img'), d = dims(t);
+    big.onerror = function () { big.onerror = null; big.src = ph(d[0], d[1], cur, true); };
+    big.src = a.getAttribute('href');
+    big.alt = t.alt;
+    cap.textContent = a.dataset.caption || '';
+    count.textContent = (cur + 1) + ' / ' + items.length;
+  }
+  function open(i) { show(i); if (!lb.open) lb.showModal(); }
+  function close() { lb.close(); }
+
+  lb.querySelector('.lb-close').onclick = close;
+  lb.querySelector('.lb-prev').onclick = function () { show(cur - 1); };
+  lb.querySelector('.lb-next').onclick = function () { show(cur + 1); };
+  lb.addEventListener('click', function (e) { if (e.target === lb || e.target.classList.contains('lb-stage')) close(); });
+  lb.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft') show(cur - 1);
+    if (e.key === 'ArrowRight') show(cur + 1);
+  });
+  var x0 = null;
+  lb.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+  lb.addEventListener('touchend', function (e) {
+    if (x0 === null) return;
+    var dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 50) show(cur + (dx < 0 ? 1 : -1));
+    x0 = null;
+  });
+})();
+</script>
+</body>
+</html>
