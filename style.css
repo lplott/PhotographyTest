@@ -1,45 +1,89 @@
+:root {
+  --paper: #fafaf8;
+  --ink: #1c1c1b;
+  --mute: #8b8b86;
+  --line: #e4e3df;
+  --gap: 10px;
+  --pad: clamp(16px, 4vw, 48px);
+}
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
+html { background: var(--paper); }
 body {
-  font-family: system-ui, sans-serif;
-  background: #111;
-  color: #eee;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 300;
+  color: var(--ink);
+  background: var(--paper);
+  line-height: 1.6;
 }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
+/* ---------- Header ---------- */
 header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem 2rem;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 24px var(--pad);
 }
+/* Logo placeholder: replace the <span> with <img src="images/logo.svg" alt="Your Name"> */
+.logo {
+  display: grid; place-items: center; text-decoration: none;
+  width: 120px; height: 48px;
+  border: 1px dashed var(--mute); color: var(--mute); font-size: 0.8rem;
+}
+nav a { text-decoration: none; margin-left: 28px; color: var(--mute); font-size: 0.95rem; }
+nav a:hover, nav a[aria-current] { color: var(--ink); }
 
-nav a {
-  color: #eee;
-  text-decoration: none;
-  margin-left: 1.5rem;
+/* ---------- About page ---------- */
+.about { max-width: 1100px; margin: 0 auto; padding: 0 var(--pad); }
+.hero {
+  width: 100%; aspect-ratio: 21 / 9; background: #e4e3df;
+  display: grid; place-items: center; overflow: hidden; color: var(--mute); font-size: 0.9rem;
 }
-nav a:hover { text-decoration: underline; }
+.hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tagline {
+  text-align: center; font-weight: 700; font-size: clamp(1.1rem, 2.4vw, 1.5rem);
+  margin: 40px auto 36px; max-width: 28em; line-height: 1.35;
+}
+.bio { max-width: 38em; margin: 0 auto; }
+.bio p { margin-bottom: 1.2em; font-size: 1.05rem; }
+.contact {
+  max-width: 38em; margin: 56px auto 0; padding-top: 28px;
+  border-top: 1px solid var(--line);
+  display: flex; justify-content: center; gap: 36px; flex-wrap: wrap; font-size: 0.95rem;
+}
+.contact a { text-decoration: none; border-bottom: 1px solid var(--line); padding-bottom: 2px; }
+.contact a:hover { border-color: var(--ink); }
 
-.gallery {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 8px;
-  padding: 0 2rem;
-}
+footer { padding: 48px var(--pad) 40px; color: var(--mute); font-size: 0.8rem; text-align: center; }
 
-.gallery img {
-  width: 100%;
-  height: 100%;
-  aspect-ratio: 3 / 2;
-  object-fit: cover;
-  display: block;
-  transition: opacity 0.2s;
-}
-.gallery img:hover { opacity: 0.8; }
+/* ---------- Gallery (masonry) ---------- */
+.gallery { padding: 0 var(--pad) 64px; columns: 3 240px; column-gap: var(--gap); }
+.item { display: block; cursor: zoom-in; overflow: hidden; break-inside: avoid; margin-bottom: var(--gap); }
+.item img { display: block; width: 100%; height: auto; transition: opacity .25s; }
+.item:hover img { opacity: .85; }
 
-footer {
-  text-align: center;
-  padding: 2rem;
-  color: #888;
-  font-size: 0.85rem;
+/* ---------- Lightbox ---------- */
+dialog.lb {
+  border: 0; padding: 0; width: 100vw; height: 100vh; max-width: none; max-height: none;
+  background: rgba(250, 250, 248, .98); color: var(--ink);
 }
+dialog.lb::backdrop { background: transparent; }
+.lb-stage { position: absolute; inset: 56px 64px 72px; display: grid; place-items: center; }
+.lb-stage img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.lb-bar {
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 18px var(--pad);
+  display: flex; justify-content: space-between; gap: 16px; font-size: 0.85rem;
+}
+.lb-count { color: var(--mute); white-space: nowrap; }
+.lb button {
+  position: absolute; background: none; border: 0; cursor: pointer; color: var(--ink);
+  font: inherit; font-size: 1.6rem; line-height: 1; padding: 12px; opacity: .55;
+}
+.lb button:hover { opacity: 1; }
+.lb-close { top: 8px; right: 12px; }
+.lb-prev { left: 4px; top: 50%; transform: translateY(-50%); }
+.lb-next { right: 4px; top: 50%; transform: translateY(-50%); }
+@media (max-width: 600px) {
+  .lb-stage { inset: 56px 8px 72px; }
+  .lb-prev, .lb-next { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .item img { transition: none; } }
